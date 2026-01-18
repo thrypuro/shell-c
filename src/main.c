@@ -10,6 +10,7 @@
 typedef enum commands {
   EXIT,
   ECHO,
+  TYPE,
   INVALID
 } commands;
 
@@ -20,11 +21,12 @@ typedef struct Command {
 } Command;
 
 const char *cBuiltIn[] = {
-  "exit","echo"
+  "exit","echo", "type"
 };
 const commands cBuiltInEnum[] =  {
   EXIT,
-  ECHO
+  ECHO,
+  TYPE
 };
 
 #define TOTAL_BUILTIN (sizeof(cBuiltInEnum))/(sizeof(commands))
@@ -34,17 +36,13 @@ static uint32_t sCmdIndex = 0;
 
 Command parse(char * pInp){
   Command aCurComm = sCommandHistory[sCmdIndex];
-
   char *aSrc = pInp;
-  
   char * aToken = strtok_r(aSrc," ",&aSrc);
  
   for (int i = 0; i < TOTAL_BUILTIN; i ++ ){
     // printf("Built in debug %s and %s\n", aToken, cBuiltIn[i]);
     if (strcmp(aToken, cBuiltIn[i]) == 0){
       aCurComm.aCommand = cBuiltInEnum[i];
-      // printf(" I am inside the rest is : %s",aSrc);
-
       if (aSrc != NULL){
         memcpy(aCurComm.aArguments,aSrc,strlen(aSrc));
       } 
@@ -55,6 +53,26 @@ Command parse(char * pInp){
   aCurComm.aCommand = INVALID;
   sCmdIndex++;
   return aCurComm;
+}
+
+void getType(char * pCom){
+  char *aSrc = pCom;
+  char * aToken = strtok(aSrc," ");
+  while(aToken != NULL){
+    // printf("Token is %s",aToken);
+    int pNotfound = 1;
+    for (int i = 0; i < TOTAL_BUILTIN; i++) {
+        if (strcmp(aToken,cBuiltIn[i]) == 0){
+          printf("%s is a shell builtin\n", aToken);
+          pNotfound = 0;
+          break;
+        }
+    }
+    if (pNotfound){
+      printf("%s: not found\n",aToken);
+    }
+    aToken = strtok(NULL, " ");
+  }
 }
 
 int main(int argc, char *argv[]) {
@@ -81,6 +99,9 @@ int main(int argc, char *argv[]) {
       case ECHO:
         // printf("Baby baby baby");
         printf("%s\n", aCommand.aArguments);
+        break;
+      case TYPE:
+        getType(aCommand.aArguments);
         break;
       default:
         printf("%s: command not found\n",aBuffer);
