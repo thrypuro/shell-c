@@ -1,48 +1,28 @@
-#include <stddef.h>
+#include "main.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
 
-#define MAX_SHELL_INPUT 2046
-#define MAX_COMMAND_HISTORY 1337
-
-typedef enum commands {
-  EXIT,
-  ECHO,
-  TYPE,
-  INVALID
-} commands;
-
-typedef struct Command {
-  commands aCommand;
-  char aArguments[MAX_SHELL_INPUT];
-  uint32_t aArgLen;
-} Command;
-
-const char *cBuiltIn[] = {
+static char *cBuiltIn[] = {
   "exit","echo", "type"
 };
-const commands cBuiltInEnum[] =  {
+static commandType cBuiltInEnum[] =  {
   EXIT,
   ECHO,
   TYPE
 };
-
-#define TOTAL_BUILTIN (sizeof(cBuiltInEnum))/(sizeof(commands))
+#define TOTAL_BUILTIN (sizeof(cBuiltInEnum)/ sizeof(commandType))
 
 static Command sCommandHistory[MAX_COMMAND_HISTORY];
-static uint32_t sCmdIndex = 0;
+static u32 sCmdIndex = 0;
 
 Command parse(char * pInp){
   Command aCurComm = sCommandHistory[sCmdIndex];
   char *aSrc = pInp;
   char * aToken = strtok_r(aSrc," ",&aSrc);
  
-  for (int i = 0; i < TOTAL_BUILTIN; i ++ ){
+  for (i32 i = 0; i < TOTAL_BUILTIN; i ++ ){
     // printf("Built in debug %s and %s\n", aToken, cBuiltIn[i]);
     if (strcmp(aToken, cBuiltIn[i]) == 0){
-      aCurComm.aCommand = cBuiltInEnum[i];
+      aCurComm.aComType = cBuiltInEnum[i];
       if (aSrc != NULL){
         memcpy(aCurComm.aArguments,aSrc,strlen(aSrc));
       } 
@@ -50,18 +30,18 @@ Command parse(char * pInp){
       return aCurComm;
     }
   }
-  aCurComm.aCommand = INVALID;
+  aCurComm.aComType = NONE;
   sCmdIndex++;
   return aCurComm;
 }
 
-void getType(char * pCom){
-  char *aSrc = pCom;
-  char * aToken = strtok(aSrc," ");
+void getType(byte * pCom){
+  byte *aSrc = pCom;
+  byte * aToken = strtok(aSrc," ");
   while(aToken != NULL){
     // printf("Token is %s",aToken);
-    int pNotfound = 1;
-    for (int i = 0; i < TOTAL_BUILTIN; i++) {
+    i32 pNotfound = 1;
+    for (i32 i = 0; i < TOTAL_BUILTIN; i++) {
         if (strcmp(aToken,cBuiltIn[i]) == 0){
           printf("%s is a shell builtin\n", aToken);
           pNotfound = 0;
@@ -75,24 +55,43 @@ void getType(char * pCom){
   }
 }
 
-int main(int argc, char *argv[]) {
+void parsePath(byte * pPath){
+  byte * aToken = strtok(pPath,":");
+  u32 i = 0;
+  while(aToken != NULL){
+    String aStr =  {
+      .data = aToken,
+      .length = strlen(aToken)
+    };
+    sSystemPaths.aPath[i] = aStr;
+    aToken = strtok(NULL, ":");
+    i +=1;
+  }
+  sSystemPaths.aPathCount = i;
+}
+
+int main() {
   // Flush after every printf
   setbuf(stdout, NULL);
-  int aContinue = 1;
+  // Read "PATH" variable  
+  parsePath(getenv("PATH"));
+  
+  i32 aContinue = 1;
   while (aContinue) {
-    char aBuffer[MAX_SHELL_INPUT] = {0};
+    byte aBuffer[MAX_SHELL_INPUT] = {0};
     printf("$ ");
     fgets(aBuffer,MAX_SHELL_INPUT-1,stdin);
-    uint32_t aSize = strlen(aBuffer);
+    u32 aSize = strlen(aBuffer);
     if (aBuffer[aSize-1] == '\n'){
       aBuffer[aSize-1] = 0;
     }
-    char * aBufPtr = aBuffer;
+    byte * aBufPtr = aBuffer;
     while (*aBufPtr && *aBufPtr == ' '){
         aBufPtr++;
+        aSize--;
     }
     Command aCommand = parse(aBufPtr);
-    switch (aCommand.aCommand){
+    switch (aCommand.aComType){
       case EXIT:
         aContinue = 0;
         break;
