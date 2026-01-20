@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 #include <stdint.h>
 
 typedef uint32_t u32;
@@ -12,9 +15,9 @@ typedef float f32;
 typedef double f64;
 typedef char byte;
 
-
 typedef struct {
-    char * data;
+    char *data;
     u32 length;
 } String;
 
+#endif
