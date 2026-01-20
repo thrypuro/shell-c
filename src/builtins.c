@@ -22,3 +22,9 @@ void printCurrentDirectory() {
         perror("getcwd() error");
     }
 }
+
+void changeDirectory(const byte *path) {
+    if (chdir((const char *)path) != 0) {
+        printf("cd: %s: No such file or directory\n", path);
+    }
+}

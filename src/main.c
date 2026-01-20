@@ -33,6 +33,9 @@ int main() {
             case PWD:
                 printCurrentDirectory();
                 break;
+            case CD:
+                changeDirectory(aCommand.aArguments->aArg);
+                break;
             case COMMAND:
                 runCommand(aCommand);
                 break;

@@ -6,13 +6,14 @@
 #include <sys/wait.h>
 
 static char *cBuiltIn[] = {
-    "exit", "echo", "type" ,"pwd"
+    "exit", "echo", "type" ,"pwd", "cd"
 };
 static commandType cBuiltInEnum[] = {
     EXIT,
     ECHO,
     TYPE,
     PWD,
+    CD,
 };
 #define TOTAL_BUILTIN (sizeof(cBuiltInEnum) / sizeof(commandType))
 

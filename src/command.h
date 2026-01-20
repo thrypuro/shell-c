@@ -14,6 +14,7 @@ typedef enum {
     TYPE,
     COMMAND,
     PWD,
+    CD,
     NONE,
 } commandType;
 
