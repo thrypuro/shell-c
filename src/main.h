@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
+#include <sys/wait.h>
 #define MAX_COMMAND_SIZE 256
 #define MAX_PATH_SIZE 1024
 #define MAX_ARGUMENTS 128
@@ -14,6 +16,7 @@ typedef enum {
   EXIT,
   ECHO,
   TYPE,
+  COMMAND,
   NONE,
 } commandType;
 
@@ -31,7 +34,11 @@ typedef struct {
 
 typedef struct {
   commandType aComType;
+  byte aCom[MAX_COMMAND_SIZE];
+  byte aFullPath[MAX_PATH_SIZE];
+  byte aArgString[MAX_PATH_SIZE];
   CommandArgument aArguments[MAX_ARGUMENTS];
+  u32 aArgCount;
 } Command;
 
 typedef struct {
