@@ -6,7 +6,7 @@
 #include <sys/wait.h>
 
 static char *cBuiltIn[] = {
-    "exit", "echo", "type"
+    "exit", "echo", "type" ,"pwd"
 };
 static commandType cBuiltInEnum[] = {
     EXIT,
