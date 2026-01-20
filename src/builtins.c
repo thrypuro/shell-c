@@ -24,6 +24,12 @@ void printCurrentDirectory() {
 }
 
 void changeDirectory(const byte *path) {
+    if ( strcmp(path, "~") == 0 ) {
+        const char *home = getenv("HOME");
+        if (home != NULL) {
+            path = (const byte *)home;
+        }
+    }
     if (chdir((const char *)path) != 0) {
         printf("cd: %s: No such file or directory\n", path);
     }
