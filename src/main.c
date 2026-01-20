@@ -1,4 +1,5 @@
 #include "main.h"
+#include <unistd.h>
 #include <stdio.h>
 
 static char *cBuiltIn[] = {
@@ -14,17 +15,56 @@ static commandType cBuiltInEnum[] =  {
 static Command sCommandHistory[MAX_COMMAND_HISTORY];
 static u32 sCmdIndex = 0;
 
-Command parse(char * pInp){
+void setArguments(byte * aArg, Command * aCurComm){
+  byte * aToken = strtok(aArg," ");
+  i32 pNotfound = 1;
+  while(aToken != NULL && pNotfound){
+    for (int i = 0; i < TOTAL_BUILTIN; i++) {
+        if (strcmp(aToken,cBuiltIn[i]) == 0){
+          pNotfound = 0;
+          aCurComm->aArguments->aType = BUILT_IN;
+          break;
+        }
+    }
+    
+    if (pNotfound){
+      struct stat stats;
+      for (int i=0; i < sSystemPaths.aPathCount; i++){
+        char tempFullPath[MAX_PATH_SIZE] = {0};
+        snprintf(tempFullPath, sizeof(tempFullPath), "%s/%s", sSystemPaths .aPath[i].data, aToken);
+        if (stat(tempFullPath, &stats) == 0 ){
+          if(!(stats.st_mode & X_OK)){
+            continue;
+          }
+          snprintf(aCurComm->aArguments->aFullPath, 
+            sizeof(aCurComm->aArguments->aFullPath), "%s/%s", sSystemPaths.aPath[i].data, aToken);
+          pNotfound = 0;
+          aCurComm->aArguments->aType = LIBRARY;
+          break;
+        }
+      }
+     
+    }
+      // printf("%s: not found\n",aToken);
+    aToken = strtok(NULL, " ");
+  }
+  if (pNotfound){
+    aCurComm->aArguments->aType = INVALID;
+  }
+}
+
+Command parseCommand(byte * pInp){
   Command aCurComm = sCommandHistory[sCmdIndex];
-  char *aSrc = pInp;
-  char * aToken = strtok_r(aSrc," ",&aSrc);
+  byte *aSrc = pInp;
+  byte * aToken = strtok_r(aSrc," ",&aSrc);
  
-  for (i32 i = 0; i < TOTAL_BUILTIN; i ++ ){
+  for (int i = 0; i < TOTAL_BUILTIN; i ++ ){
     // printf("Built in debug %s and %s\n", aToken, cBuiltIn[i]);
     if (strcmp(aToken, cBuiltIn[i]) == 0){
       aCurComm.aComType = cBuiltInEnum[i];
       if (aSrc != NULL){
         memcpy(aCurComm.aArguments,aSrc,strlen(aSrc));
+        setArguments(aSrc, &aCurComm);
       } 
       sCmdIndex++;
       return aCurComm;
@@ -35,25 +75,7 @@ Command parse(char * pInp){
   return aCurComm;
 }
 
-void getType(byte * pCom){
-  byte *aSrc = pCom;
-  byte * aToken = strtok(aSrc," ");
-  while(aToken != NULL){
-    // printf("Token is %s",aToken);
-    i32 pNotfound = 1;
-    for (i32 i = 0; i < TOTAL_BUILTIN; i++) {
-        if (strcmp(aToken,cBuiltIn[i]) == 0){
-          printf("%s is a shell builtin\n", aToken);
-          pNotfound = 0;
-          break;
-        }
-    }
-    if (pNotfound){
-      printf("%s: not found\n",aToken);
-    }
-    aToken = strtok(NULL, " ");
-  }
-}
+
 
 void parsePath(byte * pPath){
   byte * aToken = strtok(pPath,":");
@@ -68,6 +90,21 @@ void parsePath(byte * pPath){
     i +=1;
   }
   sSystemPaths.aPathCount = i;
+}
+
+void printType(argumentType t,byte pArg[MAX_COMMAND_SIZE],byte pFullPath[MAX_COMMAND_SIZE]){
+  switch (t){
+    case BUILT_IN:
+      printf("%s is a shell builtin\n",pArg);
+      break;
+    case LIBRARY:
+      printf("%s is %s\n",pArg,pFullPath);
+      break;
+    default:
+      printf("%s: not found\n",pArg);
+      break;
+  }
+  
 }
 
 int main() {
@@ -90,17 +127,18 @@ int main() {
         aBufPtr++;
         aSize--;
     }
-    Command aCommand = parse(aBufPtr);
+    Command aCommand = parseCommand(aBufPtr);
     switch (aCommand.aComType){
       case EXIT:
         aContinue = 0;
         break;
       case ECHO:
         // printf("Baby baby baby");
-        printf("%s\n", aCommand.aArguments);
+        printf("%s\n", aCommand.aArguments->aArg);
         break;
       case TYPE:
-        getType(aCommand.aArguments);
+        printType(aCommand.aArguments->aType
+          ,aCommand.aArguments->aArg,aCommand.aArguments->aFullPath);
         break;
       default:
         printf("%s: command not found\n",aBuffer);

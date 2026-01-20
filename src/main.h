@@ -3,8 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <sys/stat.h>
 #define MAX_COMMAND_SIZE 256
+#define MAX_PATH_SIZE 1024
+#define MAX_ARGUMENTS 128
 #define MAX_SHELL_INPUT 2046
 #define MAX_COMMAND_HISTORY 1337
 
@@ -23,12 +25,13 @@ typedef enum {
 
 typedef struct {
     byte aArg[MAX_COMMAND_SIZE];
+    byte aFullPath[MAX_PATH_SIZE];
     argumentType aType;
 } CommandArgument;
 
 typedef struct {
   commandType aComType;
-  char aArguments[MAX_SHELL_INPUT];
+  CommandArgument aArguments[MAX_ARGUMENTS];
 } Command;
 
 typedef struct {
