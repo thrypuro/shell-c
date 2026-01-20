@@ -19,7 +19,7 @@ void parsePath(byte *pPath) {
     sSystemPaths.aPathCount = i;
 }
 
-i32 findExecutable(const byte *name, byte *outFullPath, u32 outSize) {
+int findExecutable(const byte *name, byte *outFullPath, u32 outSize) {
     struct stat stats;
     for (u32 i = 0; i < sSystemPaths.aPathCount; i++) {
         char tempFullPath[MAX_PATH_SIZE] = {0};

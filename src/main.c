@@ -30,6 +30,9 @@ int main() {
                 printType(aCommand.aArguments->aType,
                     aCommand.aArguments->aArg, aCommand.aArguments->aFullPath);
                 break;
+            case PWD:
+                printCurrentDirectory();
+                break;
             case COMMAND:
                 runCommand(aCommand);
                 break;

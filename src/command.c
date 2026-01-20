@@ -81,8 +81,8 @@ Command parseCommand(byte *pInp) {
 }
 
 void runCommand(Command aCommand) {
-    char *args[64];
-    args[0] = aCommand.aFullPath;
+    char *args[MAX_ARGUMENTS];
+    args[0] = aCommand.aCom;
     for (u32 i = 0; i < aCommand.aArgCount; i++) {
         args[i + 1] = aCommand.aArguments[i].aArg;
     }

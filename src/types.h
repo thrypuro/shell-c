@@ -19,5 +19,6 @@ typedef struct {
     char *data;
     u32 length;
 } String;
+#define MAX_PATH_SIZE 1024
 
 #endif

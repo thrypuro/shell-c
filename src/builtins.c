@@ -14,3 +14,11 @@ void printType(argumentType t, byte pArg[MAX_COMMAND_SIZE], byte pFullPath[MAX_C
             break;
     }
 }
+void printCurrentDirectory() {
+    char cwd[PATH_MAX];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+       printf("%s\n", cwd);
+    } else {
+        perror("getcwd() error");
+    }
+}
